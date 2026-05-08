@@ -1,6 +1,6 @@
 {
   "name": "@fikrisr/nestjs-ctx",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "High-performance request-scoped context for NestJS using AsyncLocalStorage",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

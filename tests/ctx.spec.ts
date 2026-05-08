@@ -14,6 +14,15 @@ describe('CtxStore', () => {
     });
   });
 
+  it('should update context value using set()', () => {
+    const context = { id: 1 };
+    store.run(context, () => {
+      store.set('id', 2);
+      expect(store.get().id).toBe(2);
+      expect(context.id).toBe(2); // Should mutate the original object
+    });
+  });
+
   it('should throw error if get() called outside context', () => {
     expect(() => store.get()).toThrow();
   });
@@ -56,5 +65,32 @@ describe('CtxStore', () => {
     });
 
     await expect(Promise.all(tasks)).resolves.not.toThrow();
+  });
+
+  it('should ensure strict isolation between concurrent contexts', async () => {
+    const runTask = (id: number) => {
+      return new Promise<void>((resolve) => {
+        store.run({ id }, async () => {
+          // 1. Initial check
+          expect(store.get().id).toBe(id);
+
+          // 2. Wait to let other tasks start and potentially interfere
+          await new Promise((r) => setTimeout(r, Math.random() * 30));
+
+          // 3. Mutate context
+          store.set('id', id * 10);
+
+          // 4. Wait again
+          await new Promise((r) => setTimeout(r, Math.random() * 30));
+
+          // 5. Final check - should NOT be affected by other tasks' mutations
+          expect(store.get().id).toBe(id * 10);
+          resolve();
+        });
+      });
+    };
+
+    // Run multiple tasks concurrently
+    await Promise.all([runTask(1), runTask(2), runTask(3), runTask(4), runTask(5)]);
   });
 });

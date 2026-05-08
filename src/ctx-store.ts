@@ -34,4 +34,15 @@ export class CtxStore<T = any> {
   getStore(): T | undefined {
     return this.asyncLocalStorage.getStore();
   }
+
+  /**
+   * Updates a value in the current context.
+   * Only works if the context is an object.
+   */
+  set<K extends keyof T>(key: K, value: T[K]): void {
+    const store = this.get();
+    if (typeof store === 'object' && store !== null) {
+      (store as any)[key] = value;
+    }
+  }
 }

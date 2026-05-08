@@ -63,7 +63,25 @@ export interface MyContext extends ICtx {
 }
 ```
 
-### 3. Access Context in Services
+### 3. Set or Update Context
+You can update the context anywhere in your application (Services, Guards, Interceptors).
+
+```typescript
+@Injectable()
+export class AuthService {
+  constructor(private readonly store: CtxStore<MyContext>) {}
+
+  async validateUser(token: string) {
+    const user = await this.verify(token);
+    
+    // Set data into context
+    this.store.set('userId', user.id);
+    this.store.set('role', user.role);
+  }
+}
+```
+
+### 4. Access Context in Services
 
 ```typescript
 import { Injectable } from '@nestjs/common';
@@ -87,6 +105,7 @@ export class MyService {
 - `run(context: T, callback: () => void)`: Starts a new context.
 - `get(): T`: Returns the current context. Throws error if not in context.
 - `getStore(): T | undefined`: Returns the current context or undefined.
+- `set<K extends keyof T>(key: K, value: T[K])`: Updates a property in the current context object.
 
 ### `CtxMiddleware`
 Automatically extracts `x-correlation-id` from headers or generates a new one, then wraps the request in a context.
